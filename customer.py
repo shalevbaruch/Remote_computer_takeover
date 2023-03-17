@@ -32,29 +32,12 @@ def sendScreenshot(sock):  # we use this function only while using UDP protocol
     size = len(img_data)
     sock.sendall(size.to_bytes(4, byteorder='big'))
     sock.sendall(img_data)
-    # sock.sendto(size.to_bytes(4, byteorder='big'), server_address)
-    # imgParts = split_bytes(img_data)
-    # for imgPart in imgParts:
-    #     sock.sendto(imgPart, server_address)
 
 
 def screenshotLoop(sock):
     while True:
         sendScreenshot(sock)
         time.sleep(1/60)
-
-
-def split_bytes(byte_data):
-    byte_list = []
-    length = len(byte_data)
-    i = 0
-    while i < length:
-        # Split the data into chunks of 1 KB each
-        chunk_size = min(1024, length - i)
-        chunk = byte_data[i:i+chunk_size]
-        byte_list.append(chunk)
-        i += chunk_size
-    return byte_list
 
 
 def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
@@ -98,26 +81,6 @@ if __name__ == "__main__":
     screenshot_server_Port = 9124
     Transport_Layer_Protocol = "TCP"
     screenshotSock = connect_My_Server(screenshot_server_ip, screenshot_server_Port, Transport_Layer_Protocol)
+    
     screenshotLoop(screenshotSock)
-    # t1 = threading.Thread(target=screenshotLoop, args=(screenshotSock,))  # thread for sending screenshots
-    # t1.start()
     
-
-
-    t2.join()
-    # t1.join()
-
-
-    
-
-
-
-    # keys_server_port = 9200
-    # keys_Transport_Layer_Protocol = "TCP"
-    # keysClientSock, keys_server_address = connect_My_Server(Server_IP, keys_server_port, keys_Transport_Layer_Protocol)
-    # t2 = threading.Thread(target=getKeys, args=(keysClientSock,))
-    # t2.start()
-
-    #t1.join()
-    # t2.join()
-    # t1.join()
