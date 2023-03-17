@@ -88,7 +88,7 @@ def handleKeysAndMouse(keysAndMouseSock, recieverSock):
 
 if __name__ == "__main__":
     keysPort = 9200
-    keysSock = My_Server(LISTEN_PORT=keysPort, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP",HANDLE=getKeys)
+    keysSock = My_Server(LISTEN_PORT=keysPort, SIMULTANEOUS_REQUESTS_LIMIT=2,TRANSPORT_LAYER_PROTOCOL="TCP",HANDLE=getKeys)
     t2 = threading.Thread(target=keysSock.start)
     t2.start()
 
@@ -98,13 +98,14 @@ if __name__ == "__main__":
     screenshot_server_Port = 9124
     Transport_Layer_Protocol = "TCP"
     screenshotSock = connect_My_Server(screenshot_server_ip, screenshot_server_Port, Transport_Layer_Protocol)
-    t1 = threading.Thread(target=screenshotLoop, args=(screenshotSock,))  # thread for sending screenshots
-    t1.start()
+    screenshotLoop(screenshotSock)
+    # t1 = threading.Thread(target=screenshotLoop, args=(screenshotSock,))  # thread for sending screenshots
+    # t1.start()
     
 
 
     t2.join()
-    t1.join()
+    # t1.join()
 
 
     
