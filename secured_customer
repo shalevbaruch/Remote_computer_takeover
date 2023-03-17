@@ -1,0 +1,51 @@
+import time
+import os
+from PIL import ImageGrab
+import sys
+import socket
+import ssl
+import select
+from io import BytesIO
+import threading
+
+
+def sendScreenshot(ssl_sock):
+    img = ImageGrab.grab()
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    img_data = buffer.getvalue()
+    ssl_sock.sendall(img_data)
+
+
+def screenshotLoop(sock):
+    while True:
+        sendScreenshot(sock)
+        time.sleep(1/60)
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    # create SSL context object
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+
+    # set SSL options to disable SSLv2 and SSLv3
+    context.options |= ssl.OP_NO_SSLv2
+    context.options |= ssl.OP_NO_SSLv3
+
+    # set SSL buffer size to 8192 bytes
+    context.max_send_fragment = 30000
+    context.max_recv_fragment = 30000
+
+    # create SSL socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ssl_sock = context.wrap_socket(sock, server_hostname="127.0.0.1")
+    ssl_sock.connect(("127.0.0.1",9124))
+    print(ssl_sock.recv(10).decode())
+    sendScreenshot(ssl_sock)
+

@@ -6,48 +6,110 @@ import socket
 import ssl
 import select
 from io import BytesIO
+import threading
+import keyboard
+
+try:
+    from Sending_Files_System.server import My_Server
+except ImportError:
+    from ..Sending_Files_System.server import My_Server
 
 
 
-def sendScreenshot(ssl_sock):
+
+
+def sendScreenshot(sock):  # we use this function only while using UDP protocol
     img = ImageGrab.grab()
     buffer = BytesIO()
-    img.save(buffer, format="JPEG")
+    img.save(buffer, format="PNG")
     img_data = buffer.getvalue()
-    ssl_sock.sendall(img_data)
+    size = len(img_data)
+    sock.sendall(size.to_bytes(4, byteorder='big'))
+    sock.sendall(img_data)
+    # sock.sendto(size.to_bytes(4, byteorder='big'), server_address)
+    # imgParts = split_bytes(img_data)
+    # for imgPart in imgParts:
+    #     sock.sendto(imgPart, server_address)
 
 
+def screenshotLoop(sock):
+    while True:
+        sendScreenshot(sock)
+        time.sleep(1/60)
 
 
-    # screenshot_bytes = screenshot.to_bytes(4, )
-    # print(screenshot_bytes)
-    # size = len(screenshot_bytes)
-    # ssl_sock.sendall(size.to_bytes(4, byteorder='big'))
-    # ssl_sock.sendall(screenshot_bytes)
-    # for data in screenshot_bytes:
-    #     ssl_sock.sendall(data.to_bytes())
+def split_bytes(byte_data):
+    byte_list = []
+    length = len(byte_data)
+    i = 0
+    while i < length:
+        # Split the data into chunks of 1 KB each
+        chunk_size = min(1024, length - i)
+        chunk = byte_data[i:i+chunk_size]
+        byte_list.append(chunk)
+        i += chunk_size
+    return byte_list
 
+
+def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
+    server_address = (Server_IP, Server_Port)
+    if Transport_Layer_Protocol == "UDP":
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
+    else:  # Transport_Layer_Protocol == "TCP":
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ssl_sock = ssl.wrap_socket(sock)  # add a security layer
+        ssl_sock.connect(server_address)     
+    return ssl_sock , server_address
+
+
+def getKeys(keysSock):
+    keysSock.sendall("start give me orders".encode())
+    while True:
+        data = keysSock.recv(1024)
+        if not data:
+            break
+        key = data.decode()
+        print(key)
+        keyboard.press(key)
+        keyboard.release(key)
+
+
+def handleKeysAndMouse(keysAndMouseSock, recieverSock):
+    pass
+
 
 
 
 
 
 if __name__ == "__main__":
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # Connecting to remote computer 9124
-    ssl_sock = ssl.wrap_socket(sock)  # add a security layer
-    SERVER_IP = "127.0.0.1"
-    SERVER_PORT = 9124
-    server_address = (SERVER_IP, SERVER_PORT)
-    ssl_sock.connect(server_address)
-    print(ssl_sock.recv(8).decode())  # welcome message
-    sendScreenshot(ssl_sock)
-    # while True:
-    #     sendScreenshot(ssl_sock)
-    #     readable, _, _ = select.select([ssl_sock], [], [])
-    #     if readable:
-    #         message = ssl_sock.recv(1024).decode()
-    #         print(message)
-    #     time.sleep(1/60)
+    keysAndMousePort = 9200
+    keysAndMouseSock = My_Server(LISTEN_PORT=keysAndMousePort, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP",HANDLE=handleKeysAndMouse)
 
+    
+    Server_IP = "127.0.0.1"
+
+
+
+    screenshot_server_Port = 9124
+    Transport_Layer_Protocol = "TCP"
+    screenshotSock, scrrenshot_server_address = connect_My_Server(Server_IP, screenshot_server_Port, Transport_Layer_Protocol)
+    t1 = threading.Thread(target=screenshotLoop, args=(screenshotSock,))  # thread for sending screenshots
+    t1.start()
+    
+
+
+    
+
+
+
+    # keys_server_port = 9200
+    # keys_Transport_Layer_Protocol = "TCP"
+    # keysClientSock, keys_server_address = connect_My_Server(Server_IP, keys_server_port, keys_Transport_Layer_Protocol)
+    # t2 = threading.Thread(target=getKeys, args=(keysClientSock,))
+    # t2.start()
+
+    #t1.join()
+    # t2.join()
+    t1.join()
