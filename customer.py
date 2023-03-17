@@ -69,13 +69,12 @@ def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
     return ssl_sock
 
 
-def getKeys(keysSock):
+def getKeys(server,keysSock):
     while True:
         data = keysSock.recv(1024)
         if not data:
             break
         key = data.decode()
-        print(key)
         keyboard.press(key)
         keyboard.release(key)
 
@@ -87,21 +86,25 @@ def handleKeysAndMouse(keysAndMouseSock, recieverSock):
 
 
 
-
 if __name__ == "__main__":
-    keysAndMousePort = 9200
-    keysAndMouseSock = My_Server(LISTEN_PORT=keysAndMousePort, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP",HANDLE=getKeys)
-    keysAndMouseSock.start()
+    keysPort = 9200
+    keysSock = My_Server(LISTEN_PORT=keysPort, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP",HANDLE=getKeys)
+    t2 = threading.Thread(target=keysSock.start)
+    t2.start()
 
 
-
-    # scrrenshot_server_ip = "127.0.0.1"
-    # screenshot_server_Port = 9124
-    # Transport_Layer_Protocol = "TCP"
-    # screenshotSock = connect_My_Server(scrrenshot_server_ip, screenshot_server_Port, Transport_Layer_Protocol)
-    # t1 = threading.Thread(target=screenshotLoop, args=(screenshotSock,))  # thread for sending screenshots
-    # t1.start()
+    # screenshot_server_ip = "127.0.0.1" 
+    screenshot_server_ip = "10.0.0.35"   # when I'm using my Desktop computer as Server.py and I'm at home
+    screenshot_server_Port = 9124
+    Transport_Layer_Protocol = "TCP"
+    screenshotSock = connect_My_Server(screenshot_server_ip, screenshot_server_Port, Transport_Layer_Protocol)
+    t1 = threading.Thread(target=screenshotLoop, args=(screenshotSock,))  # thread for sending screenshots
+    t1.start()
     
+
+
+    t2.join()
+    t1.join()
 
 
     

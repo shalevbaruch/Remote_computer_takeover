@@ -75,22 +75,23 @@ def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
 
 
 if __name__ == '__main__':
-    # screenshotServer = My_Server(LISTEN_PORT=9124, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP", HANDLE=handleScreenshot)
-    # t1 = threading.Thread(target=screenshotServer.start)
-    # t1.start()
-    # t1.join()
+    can_continue = False
+    screenshotServer = My_Server(LISTEN_PORT=9124, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP", HANDLE=handleScreenshot)
+    t1 = threading.Thread(target=screenshotServer.start)
+    t1.start()
 
 
     # keyboard_server_ip = "127.0.0.1"
-    keyboard_server_ip =  "10.0.0.60"  # when I'm using my laptop as the customer and I'm at home (The IP will probable change if I am at Tel-Aviv)
-    
-    keyboard_server_port = 9200
-    Transport_Layer_Protocol = "TCP"
-    keyboard_sock = connect_My_Server(keyboard_server_ip, keyboard_server_port, Transport_Layer_Protocol)
-    sendKeys(keyboard_sock)
-    # t2 = threading.Thread(target=keyboardServer.start)
-    # t2.start()
-    # t2.join()
-    # screenshotServer.start()
-    
-    # t1.join()
+
+    while True:
+        if can_continue:
+            keyboard_server_ip =  "10.0.0.60"  # when I'm using my laptop as the customer and I'm at home (The IP will probable change if I am at Tel-Aviv)
+            keyboard_server_port = 9200
+            Transport_Layer_Protocol = "TCP"
+            keyboard_sock = connect_My_Server(keyboard_server_ip, keyboard_server_port, Transport_Layer_Protocol)
+            t2 =threading.Thread(target=sendKeys, args=(keyboard_sock,)) 
+            t2.start()
+            
+            
+            t1.join()
+            t2.join()
