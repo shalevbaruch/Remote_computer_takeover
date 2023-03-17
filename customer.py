@@ -1,13 +1,19 @@
 import time
 import os
 from PIL import ImageGrab
+
 import sys
+sys.path.append("C:/University")  # This is the path on my desktop computer
+sys.path.append("C:/University/YoungForTech/networks")  #Thie is the path on my laptop
+
 import socket
 import ssl
 import select
 from io import BytesIO
 import threading
 import keyboard
+
+
 
 try:
     from Sending_Files_System.server import My_Server
@@ -60,11 +66,10 @@ def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ssl_sock = ssl.wrap_socket(sock)  # add a security layer
         ssl_sock.connect(server_address)     
-    return ssl_sock , server_address
+    return ssl_sock
 
 
 def getKeys(keysSock):
-    keysSock.sendall("start give me orders".encode())
     while True:
         data = keysSock.recv(1024)
         if not data:
@@ -85,18 +90,17 @@ def handleKeysAndMouse(keysAndMouseSock, recieverSock):
 
 if __name__ == "__main__":
     keysAndMousePort = 9200
-    keysAndMouseSock = My_Server(LISTEN_PORT=keysAndMousePort, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP",HANDLE=handleKeysAndMouse)
-
-    
-    Server_IP = "127.0.0.1"
+    keysAndMouseSock = My_Server(LISTEN_PORT=keysAndMousePort, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP",HANDLE=getKeys)
+    keysAndMouseSock.start()
 
 
 
-    screenshot_server_Port = 9124
-    Transport_Layer_Protocol = "TCP"
-    screenshotSock, scrrenshot_server_address = connect_My_Server(Server_IP, screenshot_server_Port, Transport_Layer_Protocol)
-    t1 = threading.Thread(target=screenshotLoop, args=(screenshotSock,))  # thread for sending screenshots
-    t1.start()
+    # scrrenshot_server_ip = "127.0.0.1"
+    # screenshot_server_Port = 9124
+    # Transport_Layer_Protocol = "TCP"
+    # screenshotSock = connect_My_Server(scrrenshot_server_ip, screenshot_server_Port, Transport_Layer_Protocol)
+    # t1 = threading.Thread(target=screenshotLoop, args=(screenshotSock,))  # thread for sending screenshots
+    # t1.start()
     
 
 
@@ -112,4 +116,4 @@ if __name__ == "__main__":
 
     #t1.join()
     # t2.join()
-    t1.join()
+    # t1.join()
