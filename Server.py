@@ -62,7 +62,8 @@ def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
     
     else:  # Transport_Layer_Protocol == "TCP":
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        ssl_sock = ssl.wrap_socket(sock)  # add a security layer
+        # ssl_sock = ssl.wrap_socket(sock)  # add a security layer
+        ssl_sock = sock
         ssl_sock.connect(server_address)    
         sendKeys(ssl_sock) 
     return ssl_sock
@@ -80,4 +81,4 @@ if __name__ == '__main__':
     screenshotServer.start()
 
 
-print(5)
+
