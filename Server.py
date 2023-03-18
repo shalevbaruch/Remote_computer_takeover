@@ -32,7 +32,8 @@ def sendKeys(keysSock):
             key = keyboard.read_event()
             print(key.event_type)
             if key.event_type == 'down':
-                keysSock.send(key.name.encode())
+                keysSock.sendall(len(key.name).to_bytes(4, byteorder='big')) 
+                keysSock.sendall(key.name.encode())
         except:
             break
 

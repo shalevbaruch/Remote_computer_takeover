@@ -54,12 +54,12 @@ def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
 
 def getKeys(server,keysSock):
     while True:
-        data = keysSock.recv(1024)
-        if not data:
-            break
-        key = data.decode()
+        key_length = keysSock.recv(4)
+        key_length = int.from_bytes(key_length, byteorder='big')
+        key = keysSock.recv(key_length).decode()
         keyboard.press(key)
         keyboard.release(key)
+
 
 
 def handleKeysAndMouse(keysAndMouseSock, recieverSock):
