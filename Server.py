@@ -1,6 +1,6 @@
 import sys
 sys.path.append("C:/University")  # This is the path on my desktop computer
-sys.path.append("C:/University/YoungForTech/networks")  #Thie is the path on my laptop
+sys.path.append("C:/University/Cyber/networks")  #Thie is the path on my laptop
 import os
 import threading
 import keyboard
@@ -9,7 +9,7 @@ import socket
 import ssl
 
 try:
-    from Sending_Files_System.server import My_Server
+    from Sending_Files_System.general_server import My_Server
 except ImportError:
     from ..Sending_Files_System.server import My_Server
 
@@ -18,12 +18,14 @@ def handleScreenshot(server, ssl_client_soc):
     # key = keyboard.read_event()
     screenshot_size = ssl_client_soc.recv(4)
     screenshot_size = int.from_bytes(screenshot_size, byteorder='big')
+    print("Received image size :{}".format(screenshot_size))
     screenshot = b''
     bytes_recieved = 0 
     while bytes_recieved < screenshot_size:
         screenshot_part =  ssl_client_soc.recv(1024)
         screenshot += screenshot_part
         bytes_recieved += len(screenshot_part)
+    print("done receiving image :{}".format(len(bytes_recieved)))
 
 
 def sendKeys(keysSock):

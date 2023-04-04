@@ -4,7 +4,7 @@ from PIL import ImageGrab
 
 import sys
 sys.path.append("C:/University")  # This is the path on my desktop computer
-sys.path.append("C:/University/YoungForTech/networks")  #Thie is the path on my laptop
+sys.path.append("C:/University/Cyber/networks")  #Thie is the path on my laptop
 
 import socket
 import ssl
@@ -24,7 +24,7 @@ except ImportError:
 
 
 
-def sendScreenshot(sock):  # we use this function only while using UDP protocol
+def sendScreenshot(sock):  
     img = ImageGrab.grab()
     buffer = BytesIO()
     img.save(buffer, format="PNG")
@@ -32,6 +32,7 @@ def sendScreenshot(sock):  # we use this function only while using UDP protocol
     size = len(img_data)
     sock.sendall(size.to_bytes(4, byteorder='big'))
     sock.sendall(img_data)
+    print("sent screen")
 
 
 def screenshotLoop(sock):
@@ -40,26 +41,24 @@ def screenshotLoop(sock):
         time.sleep(1/60)
 
 
-def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
-    server_address = (Server_IP, Server_Port)
-    if Transport_Layer_Protocol == "UDP":
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
-    else:  # Transport_Layer_Protocol == "TCP":
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # ssl_sock = ssl.wrap_socket(sock)  # add a security layer
-        ssl_sock = sock
-        ssl_sock.connect(server_address)     
+def connect_My_Server(Server_IP, Server_Port):
+    server_address = (Server_IP, Server_Port) 
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ssl_sock = ssl.wrap_socket(sock)  # add a security layer
+    ssl_sock.connect(server_address)     
     return ssl_sock
 
 
-def getKeys(server,keysSock):
+def getKeys(keysSock, keysSock_address):
     while True:
         key_length = keysSock.recv(4)
         key_length = int.from_bytes(key_length, byteorder='big')
         key = keysSock.recv(key_length).decode()
         keyboard.press(key)
         keyboard.release(key)
+
+
+
 
 
 
