@@ -62,7 +62,7 @@ def getKeys(keysSock, keysSock_address):
 
 
 
-def handleKeysAndMouse(keysAndMouseSock, recieverSock):
+def handleKeysAndMouse(keysOrMouseSock, keysOrMouseSock_address):
     pass
 
 
@@ -71,7 +71,7 @@ def handleKeysAndMouse(keysAndMouseSock, recieverSock):
 
 if __name__ == "__main__":
     keysPort = 9200
-    keysSock = My_Server(LISTEN_PORT=keysPort, SIMULTANEOUS_REQUESTS_LIMIT=2, HANDLE=getKeys)
+    keysSock = My_Server(listen_port=keysPort, simultaneous_requests_limit=2, handle=getKeys, is_secured=True)
     t2 = threading.Thread(target=keysSock.start)
     t2.start()
 
@@ -79,8 +79,7 @@ if __name__ == "__main__":
     # screenshot_server_ip = "127.0.0.1" 
     screenshot_server_ip = "10.0.0.35"   # when I'm using my Desktop computer as Server.py and I'm at home
     screenshot_server_Port = 9124
-    Transport_Layer_Protocol = "TCP"
     screenshotSock = connect_My_Server(screenshot_server_ip, screenshot_server_Port)
-    
+
     screenshotLoop(screenshotSock)
     

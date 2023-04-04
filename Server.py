@@ -16,13 +16,18 @@ except ImportError:
 
 first_screenshot = True # when we get the first screenshot, it means the client already set up the server for mouse and keyboard
 client_listening_port = 9200
-client_listening_ip = "10.0.0.138"
+client_ip = "10.0.0.60"
 
 
 def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
     if first_screenshot:
         first_screenshot = False
-        t1  = threading.Thread()
+        keysSock = connect_My_Server(client_ip, client_listening_port)
+        t1  = threading.Thread(target=sendKeys, args= (keysSock,))
+        mouseSock = connect_My_Server(client_ip, client_listening_port)
+        t2 = threading.Thread(target=sendMouse, args=(mouseSock, ))
+        t1.start()
+        t2.start()
     screenshot_size = ssl_client_soc.recv(4)
     screenshot_size = int.from_bytes(screenshot_size, byteorder='big')
     print("Received image size :{}".format(screenshot_size))
@@ -38,6 +43,10 @@ def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
     print("done receiving image :{}".format(len(bytes_recieved)))
 
 
+#הערה למחר - עבור הפונקציה של המפתחות והעכבר נרצה לשלוח כמה דברים - באיזה סוג הודעה מדובר כלומר של מקלדת או של עכבר, ואז לדוגמא עבור המקלדת נגיד באיזה סוג לחיצה זה כלומר לחיצה או
+#עזיבה של אותו לחצן,  
+
+
 def sendKeys(keysSock):
     while True:
         try: 
@@ -48,6 +57,15 @@ def sendKeys(keysSock):
                 keysSock.sendall(key.name.encode())
         except:
             break
+
+
+def sendMouse(mouseSock):
+    pass
+
+
+
+
+
 
 
 def sendkeys2(sock):
