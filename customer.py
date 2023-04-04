@@ -16,9 +16,9 @@ import keyboard
 
 
 try:
-    from Sending_Files_System.server import My_Server
+    from Sending_Files_System.general_server import My_Server
 except ImportError:
-    from ..Sending_Files_System.server import My_Server
+    from ..Sending_Files_System.general_server import My_Server
 
 
 
@@ -71,7 +71,7 @@ def handleKeysAndMouse(keysAndMouseSock, recieverSock):
 
 if __name__ == "__main__":
     keysPort = 9200
-    keysSock = My_Server(LISTEN_PORT=keysPort, SIMULTANEOUS_REQUESTS_LIMIT=2,TRANSPORT_LAYER_PROTOCOL="TCP",HANDLE=getKeys)
+    keysSock = My_Server(LISTEN_PORT=keysPort, SIMULTANEOUS_REQUESTS_LIMIT=2, HANDLE=getKeys)
     t2 = threading.Thread(target=keysSock.start)
     t2.start()
 
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     screenshot_server_ip = "10.0.0.35"   # when I'm using my Desktop computer as Server.py and I'm at home
     screenshot_server_Port = 9124
     Transport_Layer_Protocol = "TCP"
-    screenshotSock = connect_My_Server(screenshot_server_ip, screenshot_server_Port, Transport_Layer_Protocol)
+    screenshotSock = connect_My_Server(screenshot_server_ip, screenshot_server_Port)
     
     screenshotLoop(screenshotSock)
     

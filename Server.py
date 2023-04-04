@@ -11,20 +11,30 @@ import ssl
 try:
     from Sending_Files_System.general_server import My_Server
 except ImportError:
-    from ..Sending_Files_System.server import My_Server
+    from ..Sending_Files_System.general_server import My_Server
 
 
-def handleScreenshot(server, ssl_client_soc):
-    # key = keyboard.read_event()
+first_screenshot = True # when we get the first screenshot, it means the client already set up the server for mouse and keyboard
+client_listening_port = 9200
+client_listening_ip = "10.0.0.138"
+
+
+def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
+    if first_screenshot:
+        first_screenshot = False
+        t1  = threading.Thread()
     screenshot_size = ssl_client_soc.recv(4)
     screenshot_size = int.from_bytes(screenshot_size, byteorder='big')
     print("Received image size :{}".format(screenshot_size))
     screenshot = b''
     bytes_recieved = 0 
+    to_recieve = 1024
     while bytes_recieved < screenshot_size:
-        screenshot_part =  ssl_client_soc.recv(1024)
+        screenshot_part =  ssl_client_soc.recv(to_recieve)
         screenshot += screenshot_part
         bytes_recieved += len(screenshot_part)
+        if screenshot_size - bytes_recieved < 1024:
+            to_recieve = screenshot_size - bytes_recieved
     print("done receiving image :{}".format(len(bytes_recieved)))
 
 
@@ -57,29 +67,16 @@ def sendkeys2(sock):
             break
 
 
-def connect_My_Server(Server_IP, Server_Port, Transport_Layer_Protocol):
+def connect_My_Server(Server_IP, Server_Port):
     server_address = (Server_IP, Server_Port)
-    if Transport_Layer_Protocol == "UDP":
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
-    else:  # Transport_Layer_Protocol == "TCP":
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # ssl_sock = ssl.wrap_socket(sock)  # add a security layer
-        ssl_sock = sock
-        ssl_sock.connect(server_address)    
-        sendKeys(ssl_sock) 
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ssl_sock = ssl.wrap_socket(sock)  # add a security layer
+    ssl_sock.connect(server_address)    
     return ssl_sock
 
 
-
-# if Keyboard:
-#     dsadsa
-# elif mouse:
-#     sadsada
-
-
 if __name__ == '__main__':
-    screenshotServer = My_Server(LISTEN_PORT=9124, SIMULTANEOUS_REQUESTS_LIMIT=1,TRANSPORT_LAYER_PROTOCOL="TCP", HANDLE=handleScreenshot, RUNS_ONCE=connect_My_Server)
+    screenshotServer = My_Server(listen_port=9124, simultaneous_requests_limit=1, handle=handleScreenshot, is_secured=True)
     screenshotServer.start()
 
 
