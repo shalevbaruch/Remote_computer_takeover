@@ -14,7 +14,6 @@ import threading
 import keyboard
 
 
-
 try:
     from Sending_Files_System.general_server import My_Server
 except ImportError:
@@ -32,7 +31,6 @@ def sendScreenshot(sock):
     size = len(img_data)
     sock.sendall(size.to_bytes(4, byteorder='big'))
     sock.sendall(img_data)
-    
 
 
 def screenshotLoop(sock):
@@ -53,20 +51,14 @@ def press_key(keysSock):
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
     key = keysSock.recv(key_length).decode()
-    if "_l" in key or "_r" in key: 
-        keyboard.press(key[:-2])
-    elif key != None:
-        keyboard.press(key)
-    
+    keyboard.press(key)
+
 
 def release_key(keysSock):
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
     key = keysSock.recv(key_length).decode()
-    if "_l" in key or "_r" in key: 
-        keyboard.release(key[:-2])
-    elif key != None:
-        keyboard.release(key)
+    keyboard.release(key)
 
 
 def handle_mouse():
@@ -78,10 +70,8 @@ def handle_mouse():
 
 def handleKeysAndMouse(keysOrMouseSock, keysOrMouseSock_address):
     while True:
-        print("got here")
         message_type = keysOrMouseSock.recv(1).decode()
         if message_type == "1":
-            print("server pressed a key")
             press_key(keysOrMouseSock)
         elif message_type == "2":
             release_key(keysOrMouseSock)
