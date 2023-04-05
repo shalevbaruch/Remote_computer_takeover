@@ -77,7 +77,14 @@ def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
 def sendKeys():
     while True:
         event = keyboard.read_event()
-        event = event.name
+        event_type = event.event_type
+        event_name = event.name
+        if event_type == "down":
+            keysSock.sendall("1".encode())
+        elif event_type == "up":
+            keysSock.sendall("2".encode())
+        keysSock.sendall(len(event_name).to_bytes(4, byteorder='big'))
+        keysSock.sendall(event_name.encode())
 
 
 def sendMouse(mouseSock):
@@ -104,4 +111,3 @@ if __name__ == '__main__':
 
 
 
-ad
