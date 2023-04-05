@@ -49,29 +49,43 @@ def connect_My_Server(Server_IP, Server_Port):
     return ssl_sock
 
 
-def getKeys(keysSock, keysSock_address):
-    while True:
-        key_length = keysSock.recv(4)
-        key_length = int.from_bytes(key_length, byteorder='big')
-        key = keysSock.recv(key_length).decode()
-        keyboard.press(key)
-        keyboard.release(key)
+def press_key(keysSock):
+    key_length = keysSock.recv(4)
+    key_length = int.from_bytes(key_length, byteorder='big')
+    key = keysSock.recv(key_length).decode()
+    keyboard.press(key)
+    
 
+def release_key(keysSock):
+    key_length = keysSock.recv(4)
+    key_length = int.from_bytes(key_length, byteorder='big')
+    key = keysSock.recv(key_length).decode()
+    keyboard.release(key)
+
+
+def handle_mouse():
+    pass 
 
 
 
 
 
 def handleKeysAndMouse(keysOrMouseSock, keysOrMouseSock_address):
-    pass
-
+    while True:
+        message_type = keysOrMouseSock.recv(1).decode()
+        if message_type == "1":
+            press_key(keysOrMouseSock)
+        elif message_type == "2":
+            release_key(keysOrMouseSock)
+        elif message_type == "3":
+            handle_mouse()
 
 
 
 
 if __name__ == "__main__":
     keysPort = 9200
-    keysSock = My_Server(listen_port=keysPort, simultaneous_requests_limit=2, handle=getKeys, is_secured=True)
+    keysSock = My_Server(listen_port=keysPort, simultaneous_requests_limit=2, handle=handleKeysAndMouse, is_secured=True)
     t2 = threading.Thread(target=keysSock.start)
     t2.start()
 
