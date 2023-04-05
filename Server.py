@@ -24,14 +24,18 @@ mouseSock = None
 
 def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
     while True:
+        global first_screenshot
+        global keysSock
+        global mouseSock
         if first_screenshot:
             first_screenshot = False
             keysSock = connect_My_Server(client_ip, client_listening_port)
-            t1  = threading.Thread(target=sendKeys)
-            mouseSock = connect_My_Server(client_ip, client_listening_port)
-            t2 = threading.Thread(target=sendMouse)
-            t1.start()
-            t2.start()
+            sendKeys()
+        #     t1  = threading.Thread(target=sendKeys)
+        #     mouseSock = connect_My_Server(client_ip, client_listening_port)
+        #     t2 = threading.Thread(target=sendMouse)
+        #     t1.start()
+        #     t2.start()
         screenshot_size = ssl_client_soc.recv(4)
         screenshot_size = int.from_bytes(screenshot_size, byteorder='big')
         print("Received image size :{}".format(screenshot_size))
@@ -44,16 +48,36 @@ def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
             bytes_recieved += len(screenshot_part)
             if screenshot_size - bytes_recieved < 1024:
                 to_recieve = screenshot_size - bytes_recieved
-        print("done receiving image :{}".format(len(bytes_recieved)))
+        
+        
 
 
 #הערה למחר - עבור הפונקציה של המפתחות והעכבר נרצה לשלוח כמה דברים - באיזה סוג הודעה מדובר כלומר של מקלדת או של עכבר, ואז לדוגמא עבור המקלדת נגיד באיזה סוג לחיצה זה כלומר לחיצה או
-#עזיבה של אותו לחצן,  
+#עזיבה של אותו לחצן,  asdfhfd!==
+
+
+# def on_press(key):
+#     key_repr = key.char if hasattr(key, 'char') else key.name
+#     print(key_repr)
+#     print(type(key_repr))
+#     if key_repr is not None:
+#         keysSock.sendall("1".encode())
+#         keysSock.sendall(len(key_repr).to_bytes(4, byteorder='big'))
+#         keysSock.sendall(key_repr.encode())
+
+
+# def on_release(key):
+#     key_repr = key.char if hasattr(key, 'char') else key.name
+#     if key_repr is not None:
+#         keysSock.sendall("2".encode())
+#         keysSock.sendall(len(key_repr).to_bytes(4, byteorder='big'))
+#         keysSock.sendall(key_repr.encode())
 
 
 def sendKeys():
-    with Listener(on_press=on_press, on_release=on_release) as listener:
-        listener.join()
+    while True:
+        event = keyboard.read_event()
+        event = event.name
 
 
 def sendMouse(mouseSock):
@@ -61,18 +85,7 @@ def sendMouse(mouseSock):
 
 
 
-def on_press(key):
-    key_repr = key.char if hasattr(key, 'char') else key.name
-    keysSock.sendall("1")
-    keysSock.sendall(len(key_repr).to_bytes(4, byteorder='big'))
-    keysSock.sendall(key_repr)
 
-
-def on_release(key):
-    key_repr = key.char if hasattr(key, 'char') else key.name
-    keysSock.sendall("2")
-    keysSock.sendall(len(key_repr).to_bytes(4, byteorder='big'))
-    keysSock.sendall(key_repr)
 
 
 
@@ -91,3 +104,4 @@ if __name__ == '__main__':
 
 
 
+ad
