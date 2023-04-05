@@ -32,7 +32,7 @@ def sendScreenshot(sock):
     size = len(img_data)
     sock.sendall(size.to_bytes(4, byteorder='big'))
     sock.sendall(img_data)
-    print("sent screen")
+    
 
 
 def screenshotLoop(sock):
@@ -53,14 +53,20 @@ def press_key(keysSock):
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
     key = keysSock.recv(key_length).decode()
-    keyboard.press(key)
+    if "_l" in key or "_r" in key: 
+        keyboard.press(key[:-2])
+    elif key != None:
+        keyboard.press(key)
     
 
 def release_key(keysSock):
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
     key = keysSock.recv(key_length).decode()
-    keyboard.release(key)
+    if "_l" in key or "_r" in key: 
+        keyboard.release(key[:-2])
+    elif key != None:
+        keyboard.release(key)
 
 
 def handle_mouse():
@@ -72,8 +78,10 @@ def handle_mouse():
 
 def handleKeysAndMouse(keysOrMouseSock, keysOrMouseSock_address):
     while True:
+        print("got here")
         message_type = keysOrMouseSock.recv(1).decode()
         if message_type == "1":
+            print("server pressed a key")
             press_key(keysOrMouseSock)
         elif message_type == "2":
             release_key(keysOrMouseSock)
@@ -95,5 +103,5 @@ if __name__ == "__main__":
     screenshot_server_Port = 9124
     screenshotSock = connect_My_Server(screenshot_server_ip, screenshot_server_Port)
 
-    screenshotLoop(screenshotSock)
+    #screenshotLoop(screenshotSock)
     
