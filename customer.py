@@ -52,20 +52,14 @@ def press_key(keysSock):
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
     key = keysSock.recv(key_length).decode()
-    if key.isupper():
-        pyautogui.press(key)
-    else:
-        keyboard.press(key)
+    keyboard.press(key)
 
 
 def release_key(keysSock):
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
     key = keysSock.recv(key_length).decode()
-    if key.isupper():
-        pyautogui.keyUp(key)
-    else:
-        keyboard.release(key)
+    keyboard.release(key)
 
 
 def handle_mouse():

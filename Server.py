@@ -88,7 +88,7 @@ def sendKeys():
     while True:
         event = keyboard.read_event()
         event_type = event.event_type
-        event_name = event.name
+        event_name = event.name.lower()
         if event_type == "down":
             keysSock.sendall("1".encode())
         elif event_type == "up":

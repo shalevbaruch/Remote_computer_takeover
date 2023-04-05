@@ -12,13 +12,6 @@ import ctypes
 # keyboard.release('caps lock')
 
 
-# x = "1"
-# x = int(x)
-# print(x == "1")
-# print(x == 1)
-
-x = 0
-if x:
-    print("True")
-else:
-    print("False")
+x = "Abc1"
+x = x.lower()
+print(x)
