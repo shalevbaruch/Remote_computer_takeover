@@ -8,7 +8,7 @@ import time
 import socket
 import ssl
 from pynput.keyboard import Key, Listener
-
+import ctypes
 
 try:
     from Sending_Files_System.general_server import My_Server
@@ -73,8 +73,18 @@ def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
 #         keysSock.sendall(len(key_repr).to_bytes(4, byteorder='big'))
 #         keysSock.sendall(key_repr.encode())
 
+def is_capslock_on():
+    return True if ctypes.WinDLL("User32.dll").GetKeyState(0x14) else False
+
+
 
 def sendKeys():
+    keysSock.sendall("4".encode())
+    capslock_on = is_capslock_on()
+    if capslock_on:
+        keysSock.sendall("1".encode())
+    else:
+        keysSock.sendall("0".encode())
     while True:
         event = keyboard.read_event()
         event_type = event.event_type

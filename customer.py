@@ -12,7 +12,8 @@ import select
 from io import BytesIO
 import threading
 import keyboard
-
+import pyautogui
+import ctypes
 
 try:
     from Sending_Files_System.general_server import My_Server
@@ -51,20 +52,39 @@ def press_key(keysSock):
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
     key = keysSock.recv(key_length).decode()
-    keyboard.press(key)
+    if key.isupper():
+        pyautogui.press(key)
+    else:
+        keyboard.press(key)
 
 
 def release_key(keysSock):
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
     key = keysSock.recv(key_length).decode()
-    keyboard.release(key)
+    if key.isupper():
+        pyautogui.keyUp(key)
+    else:
+        keyboard.release(key)
 
 
 def handle_mouse():
     pass 
 
 
+def is_capslock_on():
+    return True if ctypes.WinDLL("User32.dll").GetKeyState(0x14) else False
+
+
+def capslock_adjustment(keysSock):
+    capslock_on = is_capslock_on()
+    server_capslock_on = int(keysSock.recv(1).decode())
+    if (server_capslock_on and capslock_on) or (not server_capslock_on and not capslock_on):
+        return
+    else:
+        keyboard.press("caps lock")
+        keyboard.release("caps lock")
+    
 
 
 
@@ -77,6 +97,8 @@ def handleKeysAndMouse(keysOrMouseSock, keysOrMouseSock_address):
             release_key(keysOrMouseSock)
         elif message_type == "3":
             handle_mouse()
+        elif message_type == "4":
+            capslock_adjustment(keysOrMouseSock)
 
 
 
