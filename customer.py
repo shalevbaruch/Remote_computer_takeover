@@ -1,7 +1,7 @@
 import time
 import os
 from PIL import ImageGrab
-
+# AAASaasbbBVCNCXZBNM,KJHGFDSERTYUIOLP98)()bvcnmjut12543זסבהנמצתתלחיעכSAFGHTERF
 import sys
 sys.path.append("C:/University")  # This is the path on my desktop computer
 sys.path.append("C:/University/Cyber/networks")  #Thie is the path on my laptop
@@ -12,8 +12,9 @@ import select
 from io import BytesIO
 import threading
 import keyboard
-import pyautogui
 import ctypes
+import win32api
+
 
 try:
     from Sending_Files_System.general_server import My_Server
@@ -70,6 +71,16 @@ def is_capslock_on():
     return True if ctypes.WinDLL("User32.dll").GetKeyState(0x14) else False
 
 
+def is_english():
+    user32 = ctypes.WinDLL('user32', use_last_error=True)
+    curr_window = user32.GetForegroundWindow()
+    thread_id = user32.GetWindowThreadProcessId(curr_window, 0)
+    klid = user32.GetKeyboardLayout(thread_id)
+    lid = klid & (2**16 - 1)
+    lid_hex = hex(lid)
+    return lid_hex == "0x409"
+
+
 def capslock_adjustment(keysSock):
     capslock_on = is_capslock_on()
     server_capslock_on = int(keysSock.recv(1).decode())
@@ -79,6 +90,15 @@ def capslock_adjustment(keysSock):
         keyboard.press("caps lock")
         keyboard.release("caps lock")
     
+
+def language_adjustment(keysSock):
+    isEnglish = is_english()
+    isServerEnglish = int(keysSock.recv(1).decode())
+    if (isEnglish and not isServerEnglish) or (not isEnglish and isServerEnglish):
+        keyboard.press("shift")
+        keyboard.press("alt")
+        keyboard.release("shift")
+        keyboard.release("alt")
 
 
 
@@ -93,6 +113,8 @@ def handleKeysAndMouse(keysOrMouseSock, keysOrMouseSock_address):
             handle_mouse()
         elif message_type == "4":
             capslock_adjustment(keysOrMouseSock)
+        elif message_type == "5":
+            language_adjustment(keysOrMouseSock)
 
 
 

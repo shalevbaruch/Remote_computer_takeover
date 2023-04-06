@@ -77,11 +77,29 @@ def is_capslock_on():
     return True if ctypes.WinDLL("User32.dll").GetKeyState(0x14) else False
 
 
+def is_english():
+    user32 = ctypes.WinDLL('user32', use_last_error=True)
+    curr_window = user32.GetForegroundWindow()
+    thread_id = user32.GetWindowThreadProcessId(curr_window, 0)
+    klid = user32.GetKeyboardLayout(thread_id)
+    lid = klid & (2**16 - 1)
+    lid_hex = hex(lid)
+    return lid_hex == "0x409"
+
 
 def sendKeys():
+    # adjustment of caps lock
     keysSock.sendall("4".encode())
     capslock_on = is_capslock_on()
     if capslock_on:
+        keysSock.sendall("1".encode())
+    else:
+        keysSock.sendall("0".encode())
+
+    # adjustment of language
+    keysSock.sendall("5".encode())
+    isEnglish = is_english()
+    if isEnglish:
         keysSock.sendall("1".encode())
     else:
         keysSock.sendall("0".encode())
