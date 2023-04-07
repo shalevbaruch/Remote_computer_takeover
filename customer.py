@@ -1,20 +1,16 @@
 import time
-import os
 from PIL import ImageGrab
 # AAASaasbbBVCNCXZBNM,KJHGFDSERTYUIOLP98)()bvcnmjut12543זסבהנמצתתלחיעכSAFGHTERF
 import sys
 sys.path.append("C:/University")  # This is the path on my desktop computer
 sys.path.append("C:/University/Cyber/networks")  #Thie is the path on my laptop
-
 import socket
 import ssl
-import select
 from io import BytesIO
 import threading
 import keyboard
-import ctypes
 import win32api
-
+import win32con
 
 try:
     from Sending_Files_System.general_server import My_Server
@@ -50,58 +46,38 @@ def connect_My_Server(Server_IP, Server_Port):
 
 
 def press_key(keysSock):
+    is_scancode = int(keysSock.recv(1).decode())
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
-    key = keysSock.recv(key_length).decode()
-    keyboard.press(key)
+    # print(key_length)
+    if is_scancode:
+        key_scancode = keysSock.recv(key_length)
+        key_scancode = int.from_bytes(key_scancode, byteorder='big')
+        # print(key_scancode)
+        win32api.keybd_event(key_scancode, 0, win32con.KEYEVENTF_EXTENDEDKEY, 0)
+    else:
+        key = keysSock.recv(key_length).decode()
+        # print(key)
+        keyboard.press(key)
 
 
 def release_key(keysSock):
+    is_scancode = int(keysSock.recv(1).decode())
     key_length = keysSock.recv(4)
     key_length = int.from_bytes(key_length, byteorder='big')
-    key = keysSock.recv(key_length).decode()
-    keyboard.release(key)
+    if is_scancode:
+        key_scancode = keysSock.recv(key_length)
+        key_scancode = int.from_bytes(key_scancode, byteorder='big')
+        win32api.keybd_event(key_scancode, 0, win32con.KEYEVENTF_EXTENDEDKEY | win32con.KEYEVENTF_KEYUP, 0)
+    else:
+        key = keysSock.recv(key_length).decode()
+        keyboard.release(key)
 
 
 def handle_mouse():
     pass 
 
-
-def is_capslock_on():
-    return True if ctypes.WinDLL("User32.dll").GetKeyState(0x14) else False
-
-
-def is_english():
-    user32 = ctypes.WinDLL('user32', use_last_error=True)
-    curr_window = user32.GetForegroundWindow()
-    thread_id = user32.GetWindowThreadProcessId(curr_window, 0)
-    klid = user32.GetKeyboardLayout(thread_id)
-    lid = klid & (2**16 - 1)
-    lid_hex = hex(lid)
-    return lid_hex == "0x409"
-
-
-def capslock_adjustment(keysSock):
-    capslock_on = is_capslock_on()
-    server_capslock_on = int(keysSock.recv(1).decode())
-    if (server_capslock_on and capslock_on) or (not server_capslock_on and not capslock_on):
-        return
-    else:
-        keyboard.press("caps lock")
-        keyboard.release("caps lock")
     
-
-def language_adjustment(keysSock):
-    isEnglish = is_english()
-    isServerEnglish = int(keysSock.recv(1).decode())
-    if (isEnglish and not isServerEnglish) or (not isEnglish and isServerEnglish):
-        keyboard.press("shift")
-        keyboard.press("alt")
-        keyboard.release("shift")
-        keyboard.release("alt")
-
-
-
 def handleKeysAndMouse(keysOrMouseSock, keysOrMouseSock_address):
     while True:
         message_type = keysOrMouseSock.recv(1).decode()
@@ -111,10 +87,9 @@ def handleKeysAndMouse(keysOrMouseSock, keysOrMouseSock_address):
             release_key(keysOrMouseSock)
         elif message_type == "3":
             handle_mouse()
-        elif message_type == "4":
-            capslock_adjustment(keysOrMouseSock)
-        elif message_type == "5":
-            language_adjustment(keysOrMouseSock)
+        
+
+
 
 
 
@@ -130,6 +105,5 @@ if __name__ == "__main__":
     screenshot_server_ip = "10.0.0.35"   # when I'm using my Desktop computer as Server.py and I'm at home
     screenshot_server_Port = 9124
     screenshotSock = connect_My_Server(screenshot_server_ip, screenshot_server_Port)
-
-    #screenshotLoop(screenshotSock)
+    screenshotLoop(screenshotSock)
     
