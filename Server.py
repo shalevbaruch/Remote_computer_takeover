@@ -22,6 +22,18 @@ client_ip = "10.0.0.60"
 keysSock = None
 mouseSock = None
 
+hebrew_to_english = {
+    'א': "t", 'ב': 'c', 'ג': 'd', 'ד': 's', 'ה': 'v', 'ו': 'u', 'ז': 'z',
+    'ח': 'j', 'ט': 'y', 'י': 'h', 'כ': 'f', 'ל': 'k', 'מ': 'n', 'נ': 'b',
+    'ס': 'x', 'ע': 'g', 'פ': 'p', 'צ': 'm', 'ק': 'e', 'ר': 'r', 'ש': 'a',
+    'ת': ',', 'ם': 'o', 'ן': 'i', 'ץ': '.', 'ף': ';', 'ך': 'l', ";" : "`",
+     "[" : "]", "]" : "[", "{" : "}", "}": "{", "(" : ")", ")" : "(", 
+      "," : "'", "." : "/" , "'": "w", "/" : "q"
+}
+
+# , ";" : "`",
+#     "[" : "]", "]" : "[", "{" : "}", "}": "{", "(" : ")", ")" : "(", 
+#    "," : "'", "." : "/" , "'": "w", "/" : "q"
 def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
     while True:
         global first_screenshot
@@ -52,26 +64,6 @@ def handleScreenshot(ssl_client_soc, ssl_client_soc_address):
         
 
 
-#הערה למחר - עבור הפונקציה של המפתחות והעכבר נרצה לשלוח כמה דברים - באיזה סוג הודעה מדובר כלומר של מקלדת או של עכבר, ואז לדוגמא עבור המקלדת נגיד באיזה סוג לחיצה זה כלומר לחיצה או
-#עזיבה של אותו לחצן,  asdfhfd!==
-
-
-# def on_press(key):
-#     key_repr = key.char if hasattr(key, 'char') else key.name
-#     print(key_repr)
-#     print(type(key_repr))
-#     if key_repr is not None:
-#         keysSock.sendall("1".encode())
-#         keysSock.sendall(len(key_repr).to_bytes(4, byteorder='big'))
-#         keysSock.sendall(key_repr.encode())
-
-
-# def on_release(key):
-#     key_repr = key.char if hasattr(key, 'char') else key.name
-#     if key_repr is not None:
-#         keysSock.sendall("2".encode())
-#         keysSock.sendall(len(key_repr).to_bytes(4, byteorder='big'))
-#         keysSock.sendall(key_repr.encode())
 
 def is_capslock_on():
     return True if ctypes.WinDLL("User32.dll").GetKeyState(0x14) else False
@@ -88,38 +80,75 @@ def is_english():
 
 
 def sendKeys():
+    
+    global hebrew_to_english
     # adjustment of caps lock
-    keysSock.sendall("4".encode())
-    capslock_on = is_capslock_on()
-    if capslock_on:
-        keysSock.sendall("1".encode())
-    else:
-        keysSock.sendall("0".encode())
+    # keysSock.sendall("4".encode())
+    # capslock_on = is_capslock_on()
+    # if capslock_on:
+    #     keysSock.sendall("1".encode())
+    # else:
+    #     keysSock.sendall("0".encode())
 
-    # adjustment of language
-    keysSock.sendall("5".encode())
-    isEnglish = is_english()
-    if isEnglish:
-        keysSock.sendall("1".encode())
-    else:
-        keysSock.sendall("0".encode())
+    # # adjustment of language
+    # keysSock.sendall("5".encode())
+    # isEnglish = is_english()
+    # if isEnglish:
+    #     keysSock.sendall("1".encode())
+    # else:
+    #     keysSock.sendall("0".encode())
+    # isEnglish = is_english()
+    # keysSock.sendall("6".encode())
+    # capslock_on = is_capslock_on()
+    # if capslock_on:
+    #     keysSock.sendall("1".encode())
+    # else:
+    #     keysSock.sendall("0".encode())
+    # isClientEnglish = int(keysSock.recv(1).decode())
+    # if (isClientEnglish and not isEnglish) or (not isClientEnglish and isEnglish):
+    #     keyboard.press("shift")
+    #     keyboard.press("alt")
+    #     keyboard.release("shift")
+    #     keyboard.release("alt")
+    
+
     while True:
         event = keyboard.read_event()
         event_type = event.event_type
-        event_name = event.name.lower()
+        event_name = event.name
+        # if event_name in hebrew_to_english:
+        #     event_name = hebrew_to_english[event_name]
         if event_type == "down":
             keysSock.sendall("1".encode())
         elif event_type == "up":
             keysSock.sendall("2".encode())
-        keysSock.sendall(len(event_name).to_bytes(4, byteorder='big'))
-        keysSock.sendall(event_name.encode())
+        # if event_name in hebrew_to_english:
+        #     keysSock.sendall(len(event_name + " ").to_bytes(4, byteorder='big'))
+        #     keysSock.sendall(event_name.encode())
+        # else:
+        #     keysSock.sendall(len(event_name).to_bytes(4, byteorder='big'))
+        #     keysSock.sendall(event_name.encode())
+        if len(event_name) == 1:
+            keysSock.sendall("1".encode())
+            scancode = convert_to_scancode(event_name)
+            message_length = 4
+            keysSock.sendall(message_length.to_bytes(4, byteorder='big'))
+            keysSock.sendall(scancode.to_bytes(4, byteorder='big'))
+        else:
+            keysSock.sendall("0".encode())
+            keysSock.sendall(len(event_name).to_bytes(4, byteorder='big'))
+            keysSock.sendall(event_name.encode())
+
 
 
 def sendMouse(mouseSock):
     pass
 
 
-
+def convert_to_scancode(key):
+    result = ctypes.windll.User32.VkKeyScanW(ord(key))
+    vk_key = result & 0xFF
+    return vk_key
 
 
 
