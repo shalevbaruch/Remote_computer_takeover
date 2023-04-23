@@ -43,6 +43,7 @@ def click(x,y,button,pressed):
         mouseSock.sendall("4".encode())
     x = max(x,0)
     y = max(y,0)
+    (x,y) = adjust_res(x,y)
     x = x.to_bytes(4, byteorder='big')
     y = y.to_bytes(4, byteorder='big')
     button_len = len(button.name).to_bytes(4, byteorder='big')
@@ -55,8 +56,8 @@ def adjust_res(width, height):
     global client_width
     global server_width
     global server_height
-    x = int(x * (server_width/client_width))
-    y = int(y * (server_height/client_height))
+    x = int(width * (server_width/client_width))
+    y = int(height * (server_height/client_height))
     return (x,y)
 
 
@@ -64,6 +65,7 @@ def movement(x,y):
     global mouseSock
     x = max(x,0)
     y = max(y,0)
+    (x,y) = adjust_res(x,y)
     mouseSock.sendall("5".encode())
     mouseSock.sendall(x.to_bytes(4, byteorder='big'))
     mouseSock.sendall(y.to_bytes(4, byteorder='big'))
